@@ -1,0 +1,50 @@
+# EzChatMod config
+
+# Enable to disable each method of tracking Spam messages
+Spam Tracking Method:
+
+  # Tracks if messages contain the same thing multiple times in a row
+  Duplicates: true
+
+  # Tracks if messages are in all capital letters
+  Caps Lock: true
+
+  # Tracks if messages are sent in less than the allowed amount of time
+  Message Timeout: true
+
+  # Tracks if messages are sent faster than anyone else can type
+  Conversation: true
+
+# Select what kind of punishment fits each spam offense
+# Available punishments: Single-Mute, Mute, Kick, Ban, Ip-Ban, None
+Punishments:
+
+  # Tracks if messages contain the same thing multiple times in a row
+  Duplicates: mute
+
+  # Tracks if messages are in all capital letters
+  Caps Lock: mute
+
+  # Tracks if messages are sent in less than the allowed amount of time
+  Message Timeout: mute
+
+  # Tracks if messages are sent faster than anyone else has been able to
+  Other Player Messages: mute
+
+# Settings specific to duplicate message checks
+Duplicate Settings:
+
+  # The maximum amount of duplicate messages before punishment will be invoked
+  Maximum Duplicates: 3
+
+# Settings specific to Message Timeouts
+Message Timeout Settings:
+
+  # The length of time before a message can be sent in seconds
+  Timeout Length: 1
+
+# Settings for muted players
+Mute Settings:
+
+  # The length of time before a message can be sent in seconds
+  Timeout Length: 15

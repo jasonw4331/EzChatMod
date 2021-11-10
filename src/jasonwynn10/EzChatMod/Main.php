@@ -6,7 +6,7 @@ use jasonwynn10\EzChatMod\mute\MuteEntry;
 use jasonwynn10\EzChatMod\mute\MuteList;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat;
 
@@ -18,7 +18,7 @@ class Main extends PluginBase implements Listener {
 	/** @var int[] $messageTimeout */
 	protected array $messageTimeout = [];
 
-	public function onEnable() {
+	public function onEnable() : void {
 		$this->saveDefaultConfig();
 		$this->mutedList = new MuteList($this->getDataFolder()."muted-players.txt");
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -104,7 +104,7 @@ class Main extends PluginBase implements Listener {
 		$player = $event->getPlayer();
 
 		if($this->isMuted($player->getName())) {
-			$event->setCancelled();
+			$event->cancel();
 			$player->sendMessage(TextFormat::RED."You are Muted");
 			return;
 		}
@@ -117,27 +117,27 @@ class Main extends PluginBase implements Listener {
 			$reason = "Caps Lock Spam";
 			switch(strtolower($this->getConfig()->getNested("Punishments.Caps Lock", "mute"))) {
 				case "single-mute":
-					$event->setCancelled();
+					$event->cancel();
 					$player->sendMessage(TextFormat::RED."Message Blocked for ". $reason);
 					return;
 				case "mute":
 					$this->mutePlayer($player->getName(), $reason);
-					$event->setCancelled();
+					$event->cancel();
 					$player->sendMessage(TextFormat::RED."Message Blocked for ". $reason);
 					return;
 				case "kick":
-					$player->kick($reason, false);
-					$event->setCancelled();
+					$player->kick($reason);
+					$event->cancel();
 					return;
 				case "ban":
 					$this->getServer()->getNameBans()->addBan($player->getName(), $reason);
-					$player->kick($reason, false);
-					$event->setCancelled();
+					$player->kick($reason);
+					$event->cancel();
 					return;
 				case "ip-ban":
 					$this->getServer()->getIPBans()->addBan($player->getName(), $reason);
-					$player->kick($reason, false);
-					$event->setCancelled();
+					$player->kick($reason);
+					$event->cancel();
 					return;
 				default:
 				case "none":
@@ -152,27 +152,27 @@ class Main extends PluginBase implements Listener {
 				$reason = "Duplicate Message Spam";
 				switch(strtolower($this->getConfig()->getNested("Punishments.Duplicates", "mute"))) {
 					case "single-mute":
-						$event->setCancelled();
+						$event->cancel();
 						$player->sendMessage(TextFormat::RED."Message Blocked for ". $reason);
 						return;
 					case "mute":
 						$this->mutePlayer($player->getName(), $reason);
-						$event->setCancelled();
+						$event->cancel();
 						$player->sendMessage(TextFormat::RED."Message Blocked for ". $reason);
 						return;
 					case "kick":
-						$player->kick($reason, false);
-						$event->setCancelled();
+						$player->kick($reason);
+						$event->cancel();
 						return;
 					case "ban":
 						$this->getServer()->getNameBans()->addBan($player->getName(), $reason);
-						$player->kick($reason, false);
-						$event->setCancelled();
+						$player->kick($reason);
+						$event->cancel();
 						return;
 					case "ip-ban":
 						$this->getServer()->getIPBans()->addBan($player->getName(), $reason);
-						$player->kick($reason, false);
-						$event->setCancelled();
+						$player->kick($reason);
+						$event->cancel();
 						return;
 					default:
 					case "none":
@@ -188,27 +188,27 @@ class Main extends PluginBase implements Listener {
 				$reason = "Message Timeout";
 				switch(strtolower($this->getConfig()->getNested("Punishments.Message Timeout", "single-mute"))) {
 					case "single-mute":
-						$event->setCancelled();
+						$event->cancel();
 						$player->sendMessage(TextFormat::RED."Message Blocked for ". $reason);
 						return;
 					case "mute":
 						$this->mutePlayer($player->getName(), $reason);
-						$event->setCancelled();
+						$event->cancel();
 						$player->sendMessage(TextFormat::RED."Message Blocked for ". $reason);
 						return;
 					case "kick":
-						$player->kick($reason, false);
-						$event->setCancelled();
+						$player->kick($reason);
+						$event->cancel();
 						return;
 					case "ban":
 						$this->getServer()->getNameBans()->addBan($player->getName(), $reason);
-						$player->kick($reason, false);
-						$event->setCancelled();
+						$player->kick($reason);
+						$event->cancel();
 						return;
 					case "ip-ban":
 						$this->getServer()->getIPBans()->addBan($player->getName(), $reason);
-						$player->kick($reason, false);
-						$event->setCancelled();
+						$player->kick($reason);
+						$event->cancel();
 						return;
 					default:
 					case "none":
@@ -222,27 +222,27 @@ class Main extends PluginBase implements Listener {
 			$reason = "Typing to fast for a conversation";
 			switch(strtolower($this->getConfig()->getNested("Punishments.Conversation", "single-mute"))) {
 				case "single-mute":
-					$event->setCancelled();
+					$event->cancel();
 					$player->sendMessage(TextFormat::RED."Message Blocked for ". $reason);
 					return;
 				case "mute":
 					$this->mutePlayer($player->getName(), $reason);
-					$event->setCancelled();
+					$event->cancel();
 					$player->sendMessage(TextFormat::RED."Message Blocked for ". $reason);
 					return;
 				case "kick":
-					$player->kick($reason, false);
-					$event->setCancelled();
+					$player->kick($reason);
+					$event->cancel();
 					return;
 				case "ban":
 					$this->getServer()->getNameBans()->addBan($player->getName(), $reason);
-					$player->kick($reason, false);
-					$event->setCancelled();
+					$player->kick($reason);
+					$event->cancel();
 					return;
 				case "ip-ban":
 					$this->getServer()->getIPBans()->addBan($player->getName(), $reason);
-					$player->kick($reason, false);
-					$event->setCancelled();
+					$player->kick($reason);
+					$event->cancel();
 					return;
 				default:
 				case "none":

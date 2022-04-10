@@ -1,6 +1,7 @@
 name: EzChatMod
 main: jasonwynn10\EzChatMod\Main
-version: 0.1.0
+src-namespace-prefix: jasonwynn10\EzChatMod
+version: 1.0.0
 api: 4.0.0
 description: "A plugin for blocking server chat spam"
 author: "jasonwynn10"

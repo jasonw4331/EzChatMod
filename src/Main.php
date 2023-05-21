@@ -1,18 +1,27 @@
 <?php
-declare(strict_types=1);
-namespace jasonwynn10\EzChatMod;
 
-use jasonwynn10\EzChatMod\mute\MuteEntry;
-use jasonwynn10\EzChatMod\mute\MuteList;
+declare(strict_types=1);
+namespace jasonw4331\EzChatMod;
+
+use DateInterval;
+use DateTime;
+use pocketmine\errorhandler\ErrorToExceptionHandler;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
+use pocketmine\permission\BanEntry;
+use pocketmine\permission\BanList;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat;
+use function array_filter;
+use function array_shift;
+use function count;
+use function mb_strtolower;
+use function strtoupper;
 
 class Main extends PluginBase implements Listener {
 
-	protected MuteList $mutedList;
+	protected BanList $mutedList;
 	/** @var string[][] $messageDataStore */
 	protected array $messageDataStore = [];
 	/** @var int[] $messageTimeout */
@@ -20,7 +29,7 @@ class Main extends PluginBase implements Listener {
 
 	public function onEnable() : void {
 		$this->saveDefaultConfig();
-		$this->mutedList = new MuteList($this->getDataFolder()."muted-players.txt");
+		$this->mutedList = new BanList($this->getDataFolder() . "muted-players.txt");
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
 
@@ -31,8 +40,8 @@ class Main extends PluginBase implements Listener {
 			$this->messageDataStore[$player->getName()][] = $message;
 		}
 
-		if($this->getConfig()->getNested("Spam Tracking Method.Conversation", true) === true or $this->getConfig()->getNested("Spam Tracking Method.Message Timeout", true) === true)
-			$this->messageTimeout[$player->getName()] = (new \DateTime())->getTimestamp();
+		if($this->getConfig()->getNested("Spam Tracking Method.Conversation", true) === true || $this->getConfig()->getNested("Spam Tracking Method.Message Timeout", true) === true)
+			$this->messageTimeout[$player->getName()] = (new DateTime())->getTimestamp();
 	}
 
 	protected function clearOldMessageData(Player $player) : void {
@@ -43,12 +52,12 @@ class Main extends PluginBase implements Listener {
 
 	// API
 
-	public function mutePlayer(string $target, string $reason, \DateTime $expires = null, string $source = null) : MuteEntry {
-		$seconds = (int)$this->getConfig()->getNested("Mute Settings.Timeout Length", 10);
+	public function mutePlayer(string $target, string $reason, DateTime $expires = null, string $source = null) : BanEntry {
+		$seconds = $this->getConfig()->getNested("Mute Settings.Timeout Length", 10);
 
-		$entry = new MuteEntry($target);
+		$entry = new BanEntry($target);
 		$entry->setSource($source ?? '');
-		$entry->setExpires($expires ?? (new \DateTime())->add(\DateInterval::createFromDateString($seconds." seconds")));
+		$entry->setExpires($expires ?? (new DateTime())->add(ErrorToExceptionHandler::trapAndRemoveFalse(static fn() => DateInterval::createFromDateString($seconds . " seconds"))));
 		$entry->setReason($reason);
 
 		$this->mutedList->add($entry);
@@ -82,7 +91,7 @@ class Main extends PluginBase implements Listener {
 	public function isMessageTimeout(string $target, int $seconds) : bool {
 		if(!isset($this->messageTimeout[$target]))
 			$this->messageTimeout[$target] = 0;
-		return $this->messageTimeout[$target] > (new \DateTime())->getTimestamp() - $seconds;
+		return $this->messageTimeout[$target] > (new DateTime())->getTimestamp() - $seconds;
 	}
 
 	public function isInConversation(string $target) : bool {
@@ -95,7 +104,7 @@ class Main extends PluginBase implements Listener {
 			}
 		);
 
-		return count($participants) > 0 and !$this->isMessageTimeout($target, 1);
+		return count($participants) > 0 && !$this->isMessageTimeout($target, 1);
 	}
 
 	// EVENTS
@@ -105,7 +114,7 @@ class Main extends PluginBase implements Listener {
 
 		if($this->isMuted($player->getName())) {
 			$event->cancel();
-			$player->sendMessage(TextFormat::RED."You are Muted");
+			$player->sendMessage(TextFormat::RED . "You are Muted");
 			return;
 		}
 
@@ -113,17 +122,17 @@ class Main extends PluginBase implements Listener {
 
 		$this->trackMessageData($player, $message);
 
-		if($this->getConfig()->getNested("Spam Tracking Method.Caps Lock", true) === true and $message === strtoupper($message)) {
+		if($this->getConfig()->getNested("Spam Tracking Method.Caps Lock", true) === true && $message === strtoupper($message)) {
 			$reason = "Caps Lock Spam";
-			switch(strtolower($this->getConfig()->getNested("Punishments.Caps Lock", "mute"))) {
+			switch(mb_strtolower((string) $this->getConfig()->getNested("Punishments.Caps Lock", "mute"))) {
 				case "single-mute":
 					$event->cancel();
-					$player->sendMessage(TextFormat::RED."Message Blocked for ". $reason);
+					$player->sendMessage(TextFormat::RED . "Message Blocked for " . $reason);
 					return;
 				case "mute":
 					$this->mutePlayer($player->getName(), $reason);
 					$event->cancel();
-					$player->sendMessage(TextFormat::RED."Message Blocked for ". $reason);
+					$player->sendMessage(TextFormat::RED . "Message Blocked for " . $reason);
 					return;
 				case "kick":
 					$player->kick($reason);
@@ -147,18 +156,18 @@ class Main extends PluginBase implements Listener {
 		}
 
 		if($this->getConfig()->getNested("Spam Tracking Method.Duplicates", true) === true) {
-			$duplicateCheckBack = (int)$this->getConfig()->getNested("Duplicate Settings.Maximum Duplicates", 3);
+			$duplicateCheckBack = (int) $this->getConfig()->getNested("Duplicate Settings.Maximum Duplicates", 3);
 			if($this->isMessageDuplicated($player->getName(), $message, $duplicateCheckBack)) {
 				$reason = "Duplicate Message Spam";
-				switch(strtolower($this->getConfig()->getNested("Punishments.Duplicates", "mute"))) {
+				switch(mb_strtolower((string) $this->getConfig()->getNested("Punishments.Duplicates", "mute"))) {
 					case "single-mute":
 						$event->cancel();
-						$player->sendMessage(TextFormat::RED."Message Blocked for ". $reason);
+						$player->sendMessage(TextFormat::RED . "Message Blocked for " . $reason);
 						return;
 					case "mute":
 						$this->mutePlayer($player->getName(), $reason);
 						$event->cancel();
-						$player->sendMessage(TextFormat::RED."Message Blocked for ". $reason);
+						$player->sendMessage(TextFormat::RED . "Message Blocked for " . $reason);
 						return;
 					case "kick":
 						$player->kick($reason);
@@ -183,18 +192,18 @@ class Main extends PluginBase implements Listener {
 		}
 
 		if($this->getConfig()->getNested("Spam Tracking Method.Message Timeout", true) === true) {
-			$seconds = (int)$this->getConfig()->getNested("Message Timeout Settings.Timeout Length", 1);
+			$seconds = (int) $this->getConfig()->getNested("Message Timeout Settings.Timeout Length", 1);
 			if($this->isMessageTimeout($player->getName(), $seconds)) {
 				$reason = "Message Timeout";
-				switch(strtolower($this->getConfig()->getNested("Punishments.Message Timeout", "single-mute"))) {
+				switch(mb_strtolower((string) $this->getConfig()->getNested("Punishments.Message Timeout", "single-mute"))) {
 					case "single-mute":
 						$event->cancel();
-						$player->sendMessage(TextFormat::RED."Message Blocked for ". $reason);
+						$player->sendMessage(TextFormat::RED . "Message Blocked for " . $reason);
 						return;
 					case "mute":
 						$this->mutePlayer($player->getName(), $reason);
 						$event->cancel();
-						$player->sendMessage(TextFormat::RED."Message Blocked for ". $reason);
+						$player->sendMessage(TextFormat::RED . "Message Blocked for " . $reason);
 						return;
 					case "kick":
 						$player->kick($reason);
@@ -218,17 +227,17 @@ class Main extends PluginBase implements Listener {
 			}
 		}
 
-		if($this->getConfig()->getNested("Spam Tracking Method.Conversation", true) === true and !$this->isInConversation($player->getName())) {
+		if($this->getConfig()->getNested("Spam Tracking Method.Conversation", true) === true && !$this->isInConversation($player->getName())) {
 			$reason = "Typing to fast for a conversation";
-			switch(strtolower($this->getConfig()->getNested("Punishments.Conversation", "single-mute"))) {
+			switch(mb_strtolower((string) $this->getConfig()->getNested("Punishments.Conversation", "single-mute"))) {
 				case "single-mute":
 					$event->cancel();
-					$player->sendMessage(TextFormat::RED."Message Blocked for ". $reason);
+					$player->sendMessage(TextFormat::RED . "Message Blocked for " . $reason);
 					return;
 				case "mute":
 					$this->mutePlayer($player->getName(), $reason);
 					$event->cancel();
-					$player->sendMessage(TextFormat::RED."Message Blocked for ". $reason);
+					$player->sendMessage(TextFormat::RED . "Message Blocked for " . $reason);
 					return;
 				case "kick":
 					$player->kick($reason);

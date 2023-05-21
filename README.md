@@ -1,6 +1,6 @@
 # EzChatMod
 [![Discord](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/R7kdetE)
-[![Poggit-Ci](https://poggit.pmmp.io/ci.shield/jasonwynn10/EzChatMod/EzChatMod)](https://poggit.pmmp.io/ci/jasonwynn10/EzChatMod/EzChatMod)
+[![Poggit-Ci](https://poggit.pmmp.io/ci.shield/jasonw4331/EzChatMod/EzChatMod)](https://poggit.pmmp.io/ci/jasonw4331/EzChatMod/EzChatMod)
 [![Download count](https://poggit.pmmp.io/shield.dl.total/EzChatMod)](https://poggit.pmmp.io/p/EzChatMod)
 
 # Intro

@@ -3,5 +3,15 @@ build-by-default: true
 projects:
   EzChatMod:
     path: ""
-    icon: icon.png
+    icon: "icon.png"
+    lint: false
+    excludeDirs:
+      - .github
+    excludeFiles:
+      - .gitignore
+      - CONTRIBUTING.md
+      - SECURITY.md
+      - phpstan.neon.dist
+      - phpstan-baseline.php
+      - .php-cs-fixer.php
 ...
